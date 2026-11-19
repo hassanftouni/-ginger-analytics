@@ -10,6 +10,8 @@ import { FoodyPage } from '@/pages/FoodyPage'
 import { HistoryPage } from '@/pages/HistoryPage'
 import { ImportPage } from '@/pages/ImportPage'
 import { OverviewPage } from '@/pages/OverviewPage'
+import { PlateHistoryPage } from '@/pages/PlateHistoryPage'
+import { PlatePage } from '@/pages/PlatePage'
 import { PlatformPage } from '@/pages/PlatformPage'
 import { ProductsPage } from '@/pages/ProductsPage'
 import { ReportsPage } from '@/pages/ReportsPage'
@@ -19,6 +21,7 @@ import { TotersHistoryPage } from '@/pages/TotersHistoryPage'
 import { DataStoreProvider } from '@/state/DataStoreProvider'
 import { FiltersProvider } from '@/state/FiltersProvider'
 import { FoodyStoreProvider } from '@/state/FoodyStoreProvider'
+import { PlateStoreProvider } from '@/state/PlateStoreProvider'
 import { TotersStoreProvider } from '@/state/TotersStoreProvider'
 
 function renderPage(id: RouteId) {
@@ -37,6 +40,9 @@ function renderPage(id: RouteId) {
     case 'platform-foody':
       // Foody (Cyprus, EUR) has its own analytics module, separate from Weevi and Toters.
       return <FoodyPage />
+    case 'platform-plate':
+      // Plate reservations have their own module, separate from every sales source.
+      return <PlatePage />
     case 'branches':
       return <BranchesPage />
     case 'products':
@@ -55,6 +61,8 @@ function renderPage(id: RouteId) {
       return <TotersHistoryPage />
     case 'foody-history':
       return <FoodyHistoryPage />
+    case 'plate-history':
+      return <PlateHistoryPage />
     case 'settings':
       return <SettingsPage />
   }
@@ -66,9 +74,11 @@ function App() {
     <DataStoreProvider>
       <TotersStoreProvider>
         <FoodyStoreProvider>
-          <FiltersProvider>
-            <AppLayout route={route}>{renderPage(route.id)}</AppLayout>
-          </FiltersProvider>
+          <PlateStoreProvider>
+            <FiltersProvider>
+              <AppLayout route={route}>{renderPage(route.id)}</AppLayout>
+            </FiltersProvider>
+          </PlateStoreProvider>
         </FoodyStoreProvider>
       </TotersStoreProvider>
     </DataStoreProvider>

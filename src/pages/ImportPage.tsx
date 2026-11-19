@@ -3,6 +3,10 @@ import { useEffect, useRef, useState } from 'react'
 import { ImportWorkbench } from '@/components/import/ImportWorkbench'
 import { FOODY_IDENTICAL_MESSAGE, FoodyImportPanel } from '@/components/foody/FoodyImportPanel'
 import { TotersImportPanel } from '@/components/toters/TotersImportPanel'
+import { PLATE_IDENTICAL_MESSAGE, PlateImportPanel } from '@/components/plate/PlateImportPanel'
+import { planPlateImport } from '@/plate/merge'
+import { checkPlateTarget, detectPlate, parsePlate } from '@/plate/parse'
+import { usePlateStore } from '@/state/plateStore'
 import { JobList } from '@/components/import/JobList'
 import { MultiFileDropzone } from '@/components/import/MultiFileDropzone'
 import { Alert } from '@/components/ui/Alert'
@@ -42,6 +46,11 @@ export function ImportPage() {
   useEffect(() => {
     foodyRef.current = foodyState
   }, [foodyState])
+  const { state: plateState } = usePlateStore()
+  const plateRef = useRef(plateState)
+  useEffect(() => {
+    plateRef.current = plateState
+  }, [plateState])
 
   const patchJob = (id: string, patch: Partial<ImportJob>) => setJobs((current) => current.map((j) => (j.id === id ? { ...j, ...patch } : j)))
 
@@ -65,6 +74,15 @@ export function ImportPage() {
     for (const job of created) {
       readFile(job.file)
         .then((raw) => {
+          // Plate reservation exports go to the separate Plate importer; they never become sales data.
+          const plateDetection = detectPlate(raw)
+          if (plateDetection) {
+            const plate = parsePlate(raw, plateDetection)
+            const f = plate.fileNameInfo
+            const ready = f.locationId && f.periodStart && f.periodEnd && ![...plate.issues, ...checkPlateTarget(plate, f.locationId, f.periodStart, f.periodEnd)].some((i) => i.level === 'error')
+            const identical = ready && planPlateImport(plateRef.current, plate, { locationId: f.locationId!, periodStart: f.periodStart!, periodEnd: f.periodEnd! }).kind === 'identical'
+            return patchJob(job.id, identical ? { raw, plate, state: 'skipped', plateResult: { kind: 'skipped', message: PLATE_IDENTICAL_MESSAGE } } : { raw, plate, state: 'ready' })
+          }
           // Foody exports go to the separate Foody importer; they never become Weevi datasets.
           const foodyDetection = detectFoody(raw)
           if (foodyDetection) {
@@ -98,7 +116,7 @@ export function ImportPage() {
     <>
       <PageHeader
         title="Import data"
-        description="Upload Weevi, Toters and Foody exports. All three are recognised from their headers — Toters files go to the separate Toters analytics and Foody (Cyprus, EUR) files to the separate Foody analytics. Everything stays in your browser."
+        description="Upload Weevi, Toters, Foody and Plate exports. All are recognised from their headers — Toters files go to the separate Toters analytics, Foody (Cyprus, EUR) files to Foody analytics and Plate reservation CSVs to Plate reservations. Everything stays in your browser."
         actions={
           <a href={hrefFor('/history')} className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50">
             <History className="size-4" aria-hidden="true" /> Import history
@@ -136,6 +154,19 @@ export function ImportPage() {
             <Alert level="error" title={`“${selected.file.name}” could not be read`}>
               {selected.error}
             </Alert>
+          ) : selected.plate ? (
+            <PlateImportPanel
+              key={selected.id}
+              file={selected.file}
+              parsed={selected.plate}
+              done={selected.plateResult}
+              onDone={(result) => {
+                patchJob(selected.id, { state: result.kind, plateResult: result })
+                const next = nextPending(selected.id)
+                if (next) setSelectedId(next)
+              }}
+              onCancel={() => removeJob(selected.id)}
+            />
           ) : selected.foody ? (
             <FoodyImportPanel
               key={selected.id}

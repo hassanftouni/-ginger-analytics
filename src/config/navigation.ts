@@ -14,6 +14,7 @@ import {
   Upload,
   UtensilsCrossed,
   Bike,
+  CalendarCheck,
   Users,
 } from 'lucide-react'
 
@@ -24,6 +25,7 @@ export type RouteId =
   | 'platform-weevi'
   | 'platform-toters'
   | 'platform-foody'
+  | 'platform-plate'
   | 'branches'
   | 'products'
   | 'customers'
@@ -33,6 +35,7 @@ export type RouteId =
   | 'history'
   | 'toters-history'
   | 'foody-history'
+  | 'plate-history'
   | 'settings'
 
 export interface NavItem {
@@ -64,6 +67,7 @@ export const NAV_SECTIONS: NavSection[] = [
       { id: 'platform-weevi', path: '/platforms/weevi', label: 'Weevi analytics', icon: Smartphone, analytics: true },
       { id: 'platform-toters', path: '/platforms/toters', label: 'Toters analytics', icon: Truck, analytics: true },
       { id: 'platform-foody', path: '/platforms/foody', label: 'Foody analytics', icon: Bike, analytics: true },
+      { id: 'platform-plate', path: '/platforms/plate', label: 'Plate reservations', icon: CalendarCheck, analytics: true },
     ],
   },
   {
@@ -83,6 +87,7 @@ export const NAV_SECTIONS: NavSection[] = [
       { id: 'history', path: '/history', label: 'Import history', icon: History, analytics: false },
       { id: 'toters-history', path: '/toters/history', label: 'Toters import history', icon: Truck, analytics: false },
       { id: 'foody-history', path: '/foody/history', label: 'Foody import history', icon: Bike, analytics: false },
+      { id: 'plate-history', path: '/plate/history', label: 'Plate import history', icon: CalendarCheck, analytics: false },
       { id: 'settings', path: '/settings', label: 'Reporting settings', icon: Settings, analytics: false },
     ],
   },
@@ -90,7 +95,7 @@ export const NAV_SECTIONS: NavSection[] = [
 
 export const ALL_NAV_ITEMS: NavItem[] = NAV_SECTIONS.flatMap((s) => s.items)
 
-export const FUTURE_NAV_ITEMS = [{ label: 'Reservations (Table 4, Plate)', icon: CalendarDays }]
+export const FUTURE_NAV_ITEMS = [{ label: 'Reservations (Table 4)', icon: CalendarDays }]
 
 export function findRoute(path: string): NavItem {
   return ALL_NAV_ITEMS.find((item) => item.path === path) ?? ALL_NAV_ITEMS[0]

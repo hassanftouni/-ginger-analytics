@@ -11,6 +11,8 @@ import type { TotersParseResult } from '@/toters/parse'
 import type { TotersImport } from '@/toters/types'
 import type { FoodyParseResult } from '@/foody/parse'
 import type { FoodyImportResult } from '@/foody/types'
+import type { PlateParseResult } from '@/plate/parse'
+import type { PlateImportResult } from '@/plate/types'
 
 /** One uploaded file moving through read → configure → confirm. */
 export interface ImportJob {
@@ -34,6 +36,9 @@ export interface ImportJob {
   /** Set when the file is a Foody order export: it goes to the separate Foody importer. */
   foody?: FoodyParseResult
   foodyResult?: FoodyImportResult
+  /** Set when the file is a Plate bookings export: it goes to the separate Plate importer. */
+  plate?: PlateParseResult
+  plateResult?: PlateImportResult
 }
 
 export const DEFAULT_PARSE_OPTIONS: ParseOptions = { dateFormat: 'auto', decimalSeparator: '.' }

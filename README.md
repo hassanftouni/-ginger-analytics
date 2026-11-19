@@ -1,6 +1,6 @@
 # Ginger & Co / Pertutti — Analytics Dashboard
 
-Frontend-only analytics and reporting for Ginger & Co and Pertutti (Weevi, Toters, Foody).
+Frontend-only analytics and reporting for Ginger & Co and Pertutti (Weevi, Toters, Foody, Plate reservations).
 All parsing, calculations and Excel generation run in the browser. No backend, no external APIs.
 
 ## Run locally
@@ -14,7 +14,7 @@ npm run lint
 npm test           # Vitest — parsers, validation, analytics, real-sample checks
 ```
 
-The real-sample tests read `samples/weevi/ginger/`, `samples/toters/` and `samples/foody/` when they exist and are skipped otherwise.
+The real-sample tests read `samples/weevi/ginger/`, `samples/toters/`, `samples/foody/` and the Plate `samples/Bookings — …csv` files when they exist and are skipped otherwise.
 `samples/` is git-ignored: it contains customer data and must never be committed or placed in `public/`.
 
 ## Testing the workflow
@@ -67,6 +67,19 @@ Foody is analysed completely separately from Weevi and Toters: own import, stora
 - **Missing data**: a day inside an imported file's period without orders is a real zero; a day outside every imported file is missing and never shown as zero.
 - **Filters**: brand, branch, date range (with quick ranges), daily / weekly / monthly view, and a comparison period (previous period of the same length, or custom) for campaign analysis.
 
+## Plate (separate module — reservations)
+
+Plate reservations are analysed completely separately from every sales source: own import, storage, dashboard (**Plate reservations**), import history and Excel report (**Export Plate report**). Reservations are bookings and guests, never sales.
+
+- **Format** (detected from headers): Plate `Bookings` CSV — one row per reservation with `Date, Time, Guest, Party Size, Status, …, Source, Booking Type, Occasion, Section, …, Booked At, Modified, Changes, Booking ID`.
+- **Location**: the export has no restaurant column, so the location and covered period are read from the file name (`Bookings — <location> — <from> to <to>.csv`) and confirmed on import. Locations: Ginger & Co Hazmieh · Ginger & Co Jal El Dib · Pertutti Hazmieh · Hamra (Ginger & Co + Pertutti, **one combined location**) — `src/config/plate.ts`.
+- **Rules**: reported by reservation date (never the booking date). Completed = status `Completed`; guests (covers) = party size of completed reservations; `Cancelled by User` = cancelled by the guest; `Declined` = refused by the restaurant (separate KPI). Other statuses are flagged and only count in total bookings.
+- **Not in the export**: walk-ins and no-shows (Booking Type is always `Regular`, no no-show status) — not shown. Payment columns are empty and carry no currency — no amounts are reported.
+- **Guests / privacy**: names, phone numbers, emails, confirmation codes and note text are never stored. The phone number (email as fallback) is kept only as a one-way code: repeat guest = 2+ completed reservations across all imported months; returning = also visited before the selected period.
+- **Duplicates**: one stored record per Booking ID; changed bookings open the same replace / keep choice as Foody.
+- **Validation**: October 2026 — 51 reservations, 45 completed, 157 guests, 4 cancelled (14 guests), 2 declined (4 guests); 39 unique guests, 4 repeat.
+- **Missing data**: a day inside an imported export period without bookings is a real zero; a day outside every imported period is missing.
+
 ## Structure
 
 ```
@@ -77,6 +90,7 @@ src/
   analytics/   scope & filters, source precedence / de-duplication, metrics, insights, engine
   toters/      Toters parser, import planning (conflicts / duplicates) and analytics
   foody/       Foody parser, order de-duplication, analytics and period comparison
+  plate/       Plate parser (no personal data kept), booking de-duplication, reservation analytics
   export/      analytical Excel workbook (ExcelJS)
   storage/     IndexedDB wrapper
   state/       data store (datasets, templates, settings) and global filters
@@ -96,6 +110,6 @@ src/
 - Product amounts and customer spend are never added to sales revenue; differences are shown as reconciliation warnings.
 - Daily returning-customer counts are summed as customer-days, never as distinct customers.
 - Brands are combined only when "Both brands (cross-brand)" is selected.
-- Toters and Foody data are never part of the Weevi analysis (see their sections above).
+- Toters, Foody and Plate data are never part of the Weevi analysis (see their sections above).
 - Files without a branch column need a branch scope. Only a single declared branch is attributed; nothing is split.
 - Customer names are hidden on screen by default and excluded from exports unless explicitly included.

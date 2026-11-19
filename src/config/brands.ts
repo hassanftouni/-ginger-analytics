@@ -17,7 +17,8 @@ export interface PlatformDefinition {
   status: 'active' | 'planned'
   /**
    * Reported in its own module (own import, storage, dashboard and Excel report) and never
-   * combined with the other platforms' figures. Toters: config/toters.ts · Foody: config/foody.ts.
+   * combined with the other platforms' figures. Toters: config/toters.ts · Foody: config/foody.ts ·
+   * Plate: config/plate.ts.
    */
   separate?: boolean
   /** Import categories this platform's exports can be tagged with. */
@@ -80,7 +81,14 @@ export const PLATFORMS: Record<PlatformId, PlatformDefinition> = {
     categories: [],
   },
   table4: { id: 'table4', name: 'Table 4', description: 'Reservation reports', status: 'planned', categories: [] },
-  plate: { id: 'plate', name: 'Plate', description: 'Reservation reports', status: 'planned', categories: [] },
+  plate: {
+    id: 'plate',
+    name: 'Plate',
+    description: 'Reservations — reported separately in Plate reservations (never combined with sales)',
+    status: 'active',
+    separate: true,
+    categories: [],
+  },
 }
 
 export const BRANDS: Record<BrandId, BrandDefinition> = {

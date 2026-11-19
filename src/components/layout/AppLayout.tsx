@@ -4,6 +4,7 @@ import type { NavItem } from '@/config/navigation'
 import { hrefFor } from '@/hooks/useHashRoute'
 import { useDataStore } from '@/state/dataStore'
 import { useFoodyStore } from '@/state/foodyStore'
+import { usePlateStore } from '@/state/plateStore'
 import { useTotersStore } from '@/state/totersStore'
 import { Sidebar } from './Sidebar'
 
@@ -18,6 +19,7 @@ export function AppLayout({ route, children }: AppLayoutProps) {
   const included = datasets.filter((d) => d.included).length
   const totersImports = useTotersStore().state.imports.length
   const foodyImports = useFoodyStore().state.imports.length
+  const plateImports = usePlateStore().state.imports.length
 
   return (
     <div className="min-h-svh">
@@ -60,9 +62,9 @@ export function AppLayout({ route, children }: AppLayoutProps) {
           </p>
           <div className="ml-auto flex items-center gap-3">
             <span className="hidden text-xs text-slate-500 sm:inline">
-              {datasets.length === 0 && totersImports === 0 && foodyImports === 0
+              {datasets.length === 0 && totersImports === 0 && foodyImports === 0 && plateImports === 0
                 ? 'No data imported'
-                : `${datasets.length === 0 ? 'No app data' : `${included} of ${datasets.length} app dataset${datasets.length === 1 ? '' : 's'} in analysis`}${totersImports > 0 ? ` · Toters: ${totersImports} branch import${totersImports === 1 ? '' : 's'}` : ''}${foodyImports > 0 ? ` · Foody: ${foodyImports} import${foodyImports === 1 ? '' : 's'}` : ''} · ${persistDatasets ? 'saved on this device' : 'this session only'}`}
+                : `${datasets.length === 0 ? 'No app data' : `${included} of ${datasets.length} app dataset${datasets.length === 1 ? '' : 's'} in analysis`}${totersImports > 0 ? ` · Toters: ${totersImports} branch import${totersImports === 1 ? '' : 's'}` : ''}${foodyImports > 0 ? ` · Foody: ${foodyImports} import${foodyImports === 1 ? '' : 's'}` : ''}${plateImports > 0 ? ` · Plate: ${plateImports} import${plateImports === 1 ? '' : 's'}` : ''} · ${persistDatasets ? 'saved on this device' : 'this session only'}`}
             </span>
             {route.id !== 'import' && (
               <a

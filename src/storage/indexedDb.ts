@@ -7,12 +7,13 @@
  * - `toters`    — Toters days and import history, kept apart from Weevi datasets
  *                 (saved under the same "keep data on this device" preference)
  * - `foody`     — Foody (Cyprus, EUR) orders and import history, kept apart from both
+ * - `plate`     — Plate reservations and import history (no personal guest data)
  */
 
 const DB_NAME = 'ginger-analytics'
-const DB_VERSION = 3
+const DB_VERSION = 4
 
-export type StoreName = 'datasets' | 'templates' | 'settings' | 'toters' | 'foody'
+export type StoreName = 'datasets' | 'templates' | 'settings' | 'toters' | 'foody' | 'plate'
 
 let dbPromise: Promise<IDBDatabase> | null = null
 
@@ -31,6 +32,7 @@ function openDb(): Promise<IDBDatabase> {
       if (!db.objectStoreNames.contains('settings')) db.createObjectStore('settings')
       if (!db.objectStoreNames.contains('toters')) db.createObjectStore('toters')
       if (!db.objectStoreNames.contains('foody')) db.createObjectStore('foody')
+      if (!db.objectStoreNames.contains('plate')) db.createObjectStore('plate')
     }
     request.onsuccess = () => resolve(request.result)
     request.onerror = () => reject(request.error ?? new Error('Could not open local storage.'))
